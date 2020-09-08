@@ -22,6 +22,7 @@ socket.on('connect', function () {
     //function (resp): la respuesta que espero recibir
     socket.emit('entrarChat', usuario, function (resp) {
         console.log('Usuarios conectados: ', resp);
+        renderizarUsuarios(resp);
     });
 });
 
@@ -33,11 +34,14 @@ socket.on('disconnect', function () {
 // Escuchar cuando el usuario se desconecta
 socket.on('crearMensaje', function (mensaje) {
     console.log('Server: ', mensaje);
+    renderizarMensajes(mensaje, false);
+    scrollBottom();
 });
 
 // Escuchar cuando un usuario entra al chat
 socket.on('listaPersonas', function (personas) {
     console.log('Server: ', personas);
+    renderizarUsuarios(personas);
 });
 
 //escuchamos los mensajes privados

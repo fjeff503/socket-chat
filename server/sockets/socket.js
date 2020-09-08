@@ -24,7 +24,7 @@ io.on('connection', (client) => {
         //agregamos la persona 
         usuarios.agregarPersona(client.id, data.nombre, data.sala);
         //enviamos quien se conecta al chat
-        client.broadcast.to(data.sala).emit('crearMensaje', crearMensaje('Administrador', `${data.nombre} entro al chat`));
+        client.broadcast.to(data.sala).emit('crearMensaje', crearMensaje('Administrador', `${data.nombre} entro`, 'in'));
         //enviamos cuando el usuario se conecta nuevamente (a los que esten en la misma sala)
         client.broadcast.to(data.sala).emit('listaPersonas', usuarios.getPersonasPorSala(data.sala));
         //enviamos el arreglo que nos devuelve la funcion de agregar la persona
@@ -32,20 +32,21 @@ io.on('connection', (client) => {
     });
 
     //no servira para crear un mensaje
-    client.on('crearMensaje', (data) => {
+    client.on('crearMensaje', (data, callback) => {
         const persona = usuarios.getPersona(client.id);
         //el nombre lo toma de los arreglos de la clase persona
         //y el mensaje de la data que recibimos de parte del front end
         const mensaje = crearMensaje(persona.nombre, data.mensaje);
         //evento que recibira el frontend
         client.broadcast.to(persona.sala).emit('crearMensaje', mensaje);
+        callback(mensaje);
     });
 
     client.on('disconnect', () => {
         //almacenamos la persona que se desconecto y la eliminamos del array que esta en la clase socket
         const personaBorrada = usuarios.borrarPersona(client.id);
         //enviamos un mensaje a todos de quien salio
-        client.broadcast.to(personaBorrada.sala).emit('crearMensaje', crearMensaje('Administrador', `${personaBorrada.nombre} abandono el chat`));
+        client.broadcast.to(personaBorrada.sala).emit('crearMensaje', crearMensaje('Administrador', `${personaBorrada.nombre} salió`, 'out'));
         //enviamos a todos los de la sala quienes estan activos
         //como parametro pasamos la sala a la que pertenece quien abandono la sala
         client.broadcast.to(personaBorrada.sala).emit('listaPersonas', usuarios.getPersonasPorSala(personaBorrada.sala));
